@@ -2,7 +2,7 @@ const User = require('../Models/userModel')
 const jwt = require('jsonwebtoken')
 
 const signup = (req, res) => {
-    const { name, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     // Check if the email already exists in the user collection
     User.findOne({ email: email })
@@ -12,7 +12,7 @@ const signup = (req, res) => {
                 return res.status(400).send({ message: 'Email already exists' });
             }
             // Create a new user
-            const newUser = new User({ name: name, email: email, password: password });
+            const newUser = new User({ username: username, email: email, password: password });
             // Save the new user
             newUser
                 .save()
