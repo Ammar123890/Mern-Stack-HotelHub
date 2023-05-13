@@ -1,6 +1,5 @@
 const userRouter = require('express').Router();
 const jwt = require('jsonwebtoken');
-var path = require('path')
 const {login,signup} = require('../Controllers/userController')
 
 userRouter.post('/signup',signup)
