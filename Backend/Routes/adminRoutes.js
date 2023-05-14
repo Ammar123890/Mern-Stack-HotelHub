@@ -1,9 +1,13 @@
 const adminRouter = require('express').Router();
 const jwt = require('jsonwebtoken');
-const {login,signup} = require('../Controllers/adminController')
+const {login,addHotel,deleteHotel, updateHotel} = require('../Controllers/adminController')
+const {verifyAdmin, verifyToken} = require('../Middlewares/userMiddleware')
 
-adminRouter.post('/signup',signup)
+
 adminRouter.post('/login',login)
+adminRouter.post('/addHotel', verifyToken, verifyAdmin, addHotel)
+adminRouter.delete('/deleteHotel/:id', verifyToken, verifyAdmin, deleteHotel)
+adminRouter.post('./updateHotel/:id', verifyToken, verifyAdmin, updateHotel)
 
 
 
