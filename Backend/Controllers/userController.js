@@ -1,4 +1,4 @@
-const User = require('../Models/userModel')
+const User = require('../Models/userModel.js').default
 const jwt = require('jsonwebtoken')
 
 const signup = (req, res) => {
@@ -41,5 +41,13 @@ const login = (req, res) => {
     }).catch((err) => { res.status(400).send({ message: 'Error logging in', error: err }) })
 }
 
+const getUsers = async (req, res) => {
+    try {
+        const users = await User.find();
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
 
-module.exports = { login, signup }
+module.exports = { login, signup, getUsers }

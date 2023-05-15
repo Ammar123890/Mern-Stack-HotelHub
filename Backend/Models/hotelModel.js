@@ -24,16 +24,7 @@ const hotelSchema = mongoose.Schema({
         required: true,
         type: Number
     },
-    rooms: [
-        {
-            roomNumber: String,
-            detaitls: String,
-            roomType: String,
-            roomPrice: Number,
-            roomAvailability: Boolean
-        }
-
-    ],
+    TotalRooms: Number,
     faclities: [
         {
             facilityName: String,
@@ -45,7 +36,8 @@ const hotelSchema = mongoose.Schema({
             imageUrl: String
         }
     ]
-})
+}
+)
 
 
 module.exports = mongoose.model('Hotel', hotelSchema);

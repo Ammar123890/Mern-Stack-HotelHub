@@ -28,3 +28,8 @@ mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopol
 //Implemented Booking on the basis of Hotel Id.
 //Added Booking schema. 
 //changed user schema in accordance with booking
+
+//Need to add condition checking while booking
+//Need to add Authentication Middleware
+//Only ADMIN can view All Bookings
+//user can only view his own bookings
