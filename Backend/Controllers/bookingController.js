@@ -1,170 +1,171 @@
 const Booking = require('../Models/bookingModel.js');
-const User = require('../Models/userModel.js');
-const Hotel = require('../Models/hotelModel.js');
-
-const addNewBooking = async (req, res) => {
-  const { userId, hotelId, checkInDate, checkOutDate, numberOfRooms, numberOfGuests } = req.body;
-
+const Room = require('../Models/roomModel.js')
+// Create a new booking
+async function createBooking(req, res) {
   try {
-    // Find the user
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    const {
+      user_id,
+      room_id,
+      check_in_date,
+      check_out_date,
+      guests_count
+    } = req.body;
 
-    // Find the hotel
-    const hotel = await Hotel.findById(hotelId);
-    if (!hotel) {
-      return res.status(404).json({ error: 'Hotel not found' });
-    }
-
-    // Check if the hotel has enough available rooms
-    const availableRooms = hotel.TotalRooms - getBookedRoomCount(hotel, checkInDate, checkOutDate);
-    if (numberOfRooms > availableRooms) {
-      return res.status(400).json({ error: 'Not enough available rooms' });
-    }
-
-    // Check if the number of guests does not exceed room capacity
-    if (numberOfGuests > numberOfRooms * 3) {
-      return res.status(400).json({ error: 'Number of guests exceeds room capacity' });
-    }
-
-    // Create the booking
-    const booking = new Booking({
-      user: userId,
-      hotel: hotelId,
-      checkInDate,
-      checkOutDate,
-      numberOfRooms,
-      numberOfGuests,
+    // Check if there is an existing booking for the same room at the same time
+    const existingBooking = await Booking.findOne({
+      room_id: room_id,
+      $or: [
+        {
+          check_in_date: { $lt: check_out_date },
+          check_out_date: { $gt: check_in_date }
+        },
+        {
+          check_in_date: { $gte: check_in_date, $lt: check_out_date }
+        },
+        {
+          check_out_date: { $gt: check_in_date, $lte: check_out_date }
+        }
+      ]
     });
-
-    // Save the booking
-    await booking.save();
-
-    // Associate the booking with the user
-    user.bookings.push(booking._id);
-    await user.save();
-
-    // Update the hotel's room availability
-    updateRoomAvailability(hotel, checkInDate, checkOutDate, numberOfRooms);
-
-    res.status(201).json(booking);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-
-// Helper function to get the count of booked rooms within the given duration
-function getBookedRoomCount(hotel, checkInDate, checkOutDate) {
-  return hotel.rooms.reduce((count, room) => {
-    if (!room.roomAvailability) {
-      const bookedDates = room.bookings.map(booking => ({
-        checkInDate: booking.checkInDate,
-        checkOutDate: booking.checkOutDate,
-      }));
-
-      const isBooked = bookedDates.some(
-        bookingDates =>
-          (checkInDate >= bookingDates.checkInDate && checkInDate <= bookingDates.checkOutDate) ||
-          (checkOutDate >= bookingDates.checkInDate && checkOutDate <= bookingDates.checkOutDate) ||
-          (checkInDate <= bookingDates.checkInDate && checkOutDate >= bookingDates.checkOutDate)
-      );
-
-      if (isBooked) {
-        return count + 1;
-      }
+    if (existingBooking) {
+      return res.status(400).json({ error: 'Booking for the same room at the same time already exists' });
     }
 
-    return count;
-  }, 0);
+    // Check if the number of guests exceeds the room capacity
+    const room = await Room.findById(room_id);
+    if (!room) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+    if (guests_count > room.capacity) {
+      return res.status(400).json({ error: 'Number of guests exceeds the room capacity' });
+    }
+    const numberOfDays = calculateNumberOfDays(check_in_date, check_out_date);
+    const total_price = room.price_per_night * numberOfDays;
+    const booking = new Booking({
+      user_id,
+      room_id,
+      check_in_date,
+      check_out_date,
+      guests_count,
+      total_price
+    });
+    const savedBooking = await booking.save();
+    res.json(savedBooking);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+function calculateNumberOfDays(checkInDate, checkOutDate) {
+  const oneDay = 24 * 60 * 60 * 1000; // Number of milliseconds in a day
+
+  // Convert the check-in and check-out dates to JavaScript Date objects
+  const startDate = new Date(checkInDate);
+  const endDate = new Date(checkOutDate);
+
+  // Calculate the difference in milliseconds between the two dates
+  const timeDifference = endDate.getTime() - startDate.getTime();
+
+  // Calculate the number of days by dividing the time difference by the number of milliseconds in a day
+  const numberOfDays = Math.round(timeDifference / oneDay);
+
+  return numberOfDays;
 }
 
 
-// Helper function to update room availability based on booking dates
-function updateRoomAvailability(hotel, checkInDate, checkOutDate, numberOfRooms) {
-  const availableRooms = hotel.rooms.filter(room => room.roomAvailability);
-
-  for (let i = 0; i < availableRooms.length; i++) {
-    const room = availableRooms[i];
-    const overlappingBookings = room.bookings.filter(
-      booking =>
-        (checkInDate >= booking.checkInDate && checkInDate <= booking.checkOutDate) ||
-        (checkInDate <= booking.checkOutDate) ||
-        (checkInDate <= booking.checkInDate && checkOutDate >= booking.checkOutDate)
-    );
-
-    if (overlappingBookings.length < numberOfRooms) {
-      // Book the room
-      room.bookings.push({
-        checkInDate,
-        checkOutDate,
-      });
-
-      if (overlappingBookings.length + 1 === numberOfRooms) {
-        break; // All required rooms have been booked
-      }
-    }
-  }
-
-  // Save the updated hotel
-  return hotel.save();
-}
-
-
-const getBookings = async (req, res) => {
-  const { userId } = req.params;
-
+// Get all bookings
+async function getAllBookings(req, res) {
   try {
-    const bookings = await Booking.find({ 'user.userID': userId });
-
+    const bookings = await Booking.find();
     res.json(bookings);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 }
 
-const getBookingByID = async (req, res) => {
+// Get a single booking by ID
+async function getBookingById(req, res) {
   try {
-    const booking = await Booking.findById(req.params.bookingId);
+    const booking = await Booking.findById(req.params.id);
     if (!booking) {
       return res.status(404).json({ error: 'Booking not found' });
     }
     res.json(booking);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 }
 
-const updateBooking = async (req, res) => {
+// Update a booking
+async function updateBooking(req, res) {
   try {
-    const booking = await Booking.findByIdAndUpdate(
-      req.params.bookingId,
-      req.body,
-      { new: true }
-    );
+    const { user_id, room_id, check_in_date, check_out_date, guests_count, total_price } = req.body;
+
+    const booking = await Booking.findById(req.params.id);
     if (!booking) {
       return res.status(404).json({ error: 'Booking not found' });
     }
-    res.json(booking);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+
+    // Check if there is an existing booking for the same room at the same time
+    const existingBooking = await Booking.findOne({
+      room_id: room_id,
+      _id: { $ne: req.params.id },
+      $or: [
+        {
+          check_in_date: { $lt: check_out_date },
+          check_out_date: { $gt: check_in_date }
+        },
+        {
+          check_in_date: { $gte: check_in_date, $lt: check_out_date }
+        },
+        {
+          check_out_date: { $gt: check_in_date, $lte: check_out_date }
+        }
+      ]
+    });
+    if (existingBooking) {
+      return res.status(400).json({ error: 'Booking for the same room at the same time already exists' });
+    }
+
+    // Check if the number of guests exceeds the room capacity
+    const room = await Room.findById(room_id);
+    if (!room) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+    if (guests_count > room.capacity) {
+      return res.status(400).json({ error: 'Number of guests exceeds the room capacity' });
+    }
+
+    booking.user_id = user_id;
+    booking.room_id = room_id;
+    booking.check_in_date = check_in_date;
+    booking.check_out_date = check_out_date;
+    booking.guests_count = guests_count;
+    booking.total_price = total_price;
+    const updatedBooking = await booking.save();
+    res.json(updatedBooking);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 }
 
-const deleteBooking = async (req, res) => {
+
+// Delete a booking
+async function deleteBooking(req, res) {
   try {
-    const booking = await Booking.findByIdAndDelete(req.params.bookingId);
+    const booking = await Booking.findByIdAndDelete(req.params.id);
     if (!booking) {
       return res.status(404).json({ error: 'Booking not found' });
     }
-    res.sendStatus(204);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.json({ message: 'Booking deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 }
 
-
-
-module.exports = { addNewBooking, updateBooking, deleteBooking, getBookingByID, getBookings }
+module.exports = {
+  createBooking,
+  getAllBookings,
+  getBookingById,
+  updateBooking,
+  deleteBooking
+};

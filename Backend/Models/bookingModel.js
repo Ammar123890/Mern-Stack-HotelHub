@@ -1,30 +1,14 @@
 const mongoose = require('mongoose');
 
 const bookingSchema = new mongoose.Schema({
-  userID: {
-    type: String,
-    required: true
-  },
-  hotelID: {
-    type: String,
-    required: true,
-  },
-  checkInDate: {
-    type: Date,
-    required: true,
-  },
-  checkOutDate: {
-    type: Date,
-    required: true,
-  },
-  numberOfRooms: {
-    type: Number,
-    required: true,
-  },
-  numberOfGuests: {
-    type: Number,
-    required: true,
-  },
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  room_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
+  check_in_date: Date,
+  check_out_date: Date,
+  guests_count: Number,
+  total_price: Number,
+  created_at: { type: Date, default: Date.now },
+  updated_at: { type: Date, default: Date.now }
 });
 
 const Booking = mongoose.model('Booking', bookingSchema);

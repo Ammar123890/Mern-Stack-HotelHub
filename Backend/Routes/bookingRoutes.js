@@ -1,22 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const { deleteBooking, getBookingByID, getBookings, updateBooking, addNewBooking } = require('../Controllers/bookingController.js')
-const {verifyUser, verifyToken,verifyAdmin} = require('../Middlewares/userMiddleware.js')
+const bookingController = require('../Controllers/bookingController.js');
 
 // Create a new booking
-router.post('/',addNewBooking);
-// router.post('/',verifyToken,verifyUser, addNewBooking);
+router.post('/bookings', bookingController.createBooking);
 
-// Get all bookings for a specific user
-router.get('/:userId/bookings',verifyToken,verifyUser, getBookings);
+// Get all bookings
+router.get('/bookings', bookingController.getAllBookings);
 
-// Get a specific booking by ID
-router.get('/:bookingId',verifyToken,verifyUser, getBookingByID);
+// Get a single booking by ID
+router.get('/bookings/:id', bookingController.getBookingById);
 
-// Update a specific booking by ID
-router.put('/:bookingId',verifyToken,verifyUser, updateBooking);
+// Update a booking
+router.put('/bookings/:id', bookingController.updateBooking);
 
-// Delete a specific booking by ID
-router.delete('/:bookingId',verifyToken,verifyUser, deleteBooking);
+// Delete a booking
+router.delete('/bookings/:id', bookingController.deleteBooking);
 
 module.exports = router;

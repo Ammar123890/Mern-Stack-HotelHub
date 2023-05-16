@@ -20,16 +20,19 @@ const login = (req, res) => {
 }
 
 const addHotel = (req, res) => {
-    const { name, description, location, price, rooms, amenities } = req.body;
+    const { name, location, city, state, country, stars, TotalRooms, facilities, hotelImages } = req.body;
 
     // Validate the request data
     const hotelData = {
         name: name,
-        description: description,
         location: location,
-        price: price,
-        rooms: rooms,
-        amenities: amenities
+        city: city,
+        state: state,
+        country: country,
+        stars: stars,
+        TotalRooms: TotalRooms,
+        facilities: facilities,
+        hotelImages: hotelImages
     };
     const newHotel = new Hotel(hotelData);
     const validationError = newHotel.validateSync();
@@ -197,8 +200,21 @@ const deleteHotelRoom = async (req, res) => {
         res.status(400).send({ message: 'Error deleting room.', error: error.message });
     }
 }
+const getHotelbyID = async (req, res) => {
+    const { hotelId } = req.params;
+    try {
+        // Find the hotel by ID
+        const hotel = await Hotel.findById(hotelId);
+        if (!hotel) {
+            return res.status(404).send({ message: 'Hotel not found.' });
+        }
+        res.status(200).send({ hotel });
+    } catch (error) {
+        res.status(400).send({ message: 'Error retrieving hotel.', error: error.message });
+    }
+
+}
 
 
 
-
-module.exports = { login, addHotel, deleteHotel, updateHotel, getHotels, addRoomToHotel, getRoomsFromHotel, updateHotelRoom, deleteHotelRoom }
+module.exports = { login, addHotel, getHotelbyID, deleteHotel, updateHotel, getHotels, addRoomToHotel, getRoomsFromHotel, updateHotelRoom, deleteHotelRoom }
