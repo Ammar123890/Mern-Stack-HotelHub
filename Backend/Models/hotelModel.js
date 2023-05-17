@@ -24,7 +24,6 @@ const hotelSchema = mongoose.Schema({
         required: true,
         type: Number
     },
-    TotalRooms: Number,
     faclities: [
         {
             facilityName: String,
@@ -34,6 +33,15 @@ const hotelSchema = mongoose.Schema({
     hotelImages: [
         {
             imageUrl: String
+        }
+    ],
+    comments: [
+        {
+            booking_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', required: true },
+            comment: String,
+            commented_on: { type: Date, default: Date.now },
+            commented_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+            stars: Number
         }
     ]
 }

@@ -93,11 +93,48 @@ async function deleteRoom(req, res) {
     }
 }
 
+//delete multiple rooms
+const deleteRooms = async (req, res) => {
+    const { roomIDs } = req.body;
+
+    try {
+        // Loop through the room IDs and delete each room
+        for (const roomID of roomIDs) {
+            const room = await Room.findById(roomID);
+
+            // If room doesn't exist, skip to the next one
+            if (!room) {
+                continue;
+            }
+
+            await room.remove();
+        }
+
+        res.sendStatus(204);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+const getRoomsByHotel = async (req, res) => {
+    const hotel_id = req.params.hotel_id;
+    const rooms = await Room.find({hotel_id: hotel_id})
+    if (rooms) {
+        console.log(hotel_id)
+        return res.send(rooms)
+    }
+    else {
+        return res.status(404).json({ error: "No rooms found" })
+    }
+
+}
+
 module.exports = {
     createRoom,
+    getRoomsByHotel,
     getAllRooms,
     getRoomById,
     updateRoom,
-    deleteRoom, 
-    addMultipleRooms
+    deleteRoom,
+    addMultipleRooms, deleteRooms
 };

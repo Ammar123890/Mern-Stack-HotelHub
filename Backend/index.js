@@ -12,7 +12,7 @@ app.use(express.json());
 app.use('/user', userRouter);
 app.use('/admin', adminRouter);
 app.use('/bookings', bookingRoutes);
-app.use('/hotel', roomRoutes)
+app.use('/rooms', roomRoutes)
 
 app.listen(process.env.PORT || 3000, () => {
     console.log(`App listening at port ${process.env.PORT}`)

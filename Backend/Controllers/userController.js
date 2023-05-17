@@ -1,6 +1,7 @@
 const User = require('../Models/userModel.js')
 const jwt = require('jsonwebtoken')
-
+const Hotel = require('../Models/hotelModel.js')
+const Booking = require('../Models/bookingModel.js')
 const signup = (req, res) => {
     const { username, email, password } = req.body;
 
@@ -47,19 +48,51 @@ const getUsers = async (req, res) => {
         res.json(users);
     } catch (err) {
         res.json({
-            err:"Pssst"
+            err: "Pssst"
         });
     }
 }
 
-const getUserByID = async(req, res)=>{
-try {
-    const { id } = req.params;
-    const user = await User.findById(id);
-    res.json(user);
-} catch (error) {
-    res.json("error")
+const getUserByID = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findById(id);
+        res.json(user);
+    } catch (error) {
+        res.json("error")
+    }
 }
+const addComment = (req, res) => {
+    const { user_id } = req.params;
+    const { hotel_id } = req.params;
+
+    const { comment, commented_on, stars } = req.body;
+
+    //check if booking has that user
+    const booking = Booking.findOne({ user_id: user_id });
+    if (!booking) {
+        return res.status(`404`).send('User cannot write a comment as he never stayed')
+    }
+
+    User.findById(user_id).then(() => {
+        Hotel.findById(hotel_id).then((hotel) => {
+            const newComment = {
+                booking_id: booking._id,
+                comment: comment,
+                commented_on: commented_on,
+                stars: stars,
+                commented_by: user_id,
+            }
+            hotel.comments.push(newComment);
+            hotel.save();
+        }
+        )
+
+    }).catch((err) => {
+        res.status('404').send(err);
+    });
+
 }
 
-module.exports = { login, signup, getUsers, getUserByID }
+
+module.exports = { login, signup, getUsers, getUserByID,addComment }

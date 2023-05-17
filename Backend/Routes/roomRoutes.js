@@ -17,5 +17,10 @@ router.put('/rooms/:id', roomController.updateRoom);
 
 // Delete a room
 router.delete('/rooms/:id', roomController.deleteRoom);
+router.delete('/rooms', roomController.deleteRooms);
+
+
+//get rooms of a specific hotel 
+router.get('/:hotel_id', roomController.getRoomsByHotel);
 
 module.exports = router;
