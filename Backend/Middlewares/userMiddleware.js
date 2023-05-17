@@ -6,6 +6,7 @@ const Admin = require('../Models/adminModel')
 const verifyToken = (req,res,next)=>{
     // const {token} = req.headers
     const token = req.headers['token']
+    
     if(token){
         jwt.verify(token,process.env.SECRET_KEY,(err,decoded)=>{
             if(err){
@@ -66,5 +67,38 @@ const verifyAdmin = (req,res,next)=>{
 }
 
 
+const verifyResetToken = (req, res, next) => {
+    const { token } = req.body;
+  
+    // Verify the token
+    jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+      if (err) {
+        return res.status(400).send({ message: 'Invalid token' });
+      }
+  
+      // Find the token in the PasswordResetToken collection
+      PasswordResetToken.findOne({ token: token })
+        .populate('user')
+        .exec()
+        .then((resetToken) => {
+          if (!resetToken) {
+            return res.status(400).send({ message: 'Invalid or expired token' });
+          }
+  
+          // Check if the token has expired
+          if (resetToken.expiresAt < Date.now()) {
+            return res.status(400).send({ message: 'Token has expired' });
+          }
+  
+          // Pass the user object to the next middleware/controller
+          req.user = resetToken.user;
+          next();
+        })
+        .catch((err) => res.status(500).send({ message: 'Internal server error', error: err }));
+    });
+  };
+  
 
-module.exports = {verifyToken,verifyUser,verifyAdmin}
+
+
+module.exports = {verifyToken,verifyUser,verifyAdmin, verifyResetToken}

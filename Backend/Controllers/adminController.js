@@ -198,7 +198,29 @@ const deleteHotelRoom = async (req, res) => {
     }
 }
 
+const getHotelById = async (req, res) => 
+{
+    const { id } = req.params;
+    try {
+        const hotel = await Hotel.findById(id);
+        res.status(200).send({ message: 'Successfully retrieved hotel', hotel: hotel });
+    } catch (error) {
+        res.status(400).send({ message: 'Error retrieving hotel', error: error });
+    }
+}
 
 
 
-module.exports = { login, addHotel, deleteHotel, updateHotel, getHotels, addRoomToHotel, getRoomsFromHotel, updateHotelRoom, deleteHotelRoom }
+
+module.exports = { 
+    login, 
+    addHotel, 
+    deleteHotel, 
+    updateHotel, 
+    getHotels, 
+    addRoomToHotel, 
+    getRoomsFromHotel, 
+    updateHotelRoom, 
+    deleteHotelRoom,
+    getHotelById
+ }
