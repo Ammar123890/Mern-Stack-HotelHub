@@ -1,7 +1,7 @@
-const User = require('../Models/userModel')
+const User = require('../../Models/userModel')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt');
-const PasswordResetToken = require('../Models/passwordResetModel');
+const PasswordResetToken = require('../../Models/passwordResetModel');
 const otpGenerator = require('otp-generator');
 const nodemailer = require('nodemailer');
 

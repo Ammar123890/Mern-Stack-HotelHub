@@ -1,14 +1,24 @@
 const mongoose = require('mongoose');	
 const express = require('express');
-const userRouter = require('./Routes/userRoutes')
-const adminRouter = require('./Routes/adminRoutes')
+
+const adminRouter_room = require('./Routes/adminRoutes/roomRoutes')
+const adminRouter_hotel = require('./Routes/adminRoutes/hotelRoutes')
+const adminRouter_auth = require('./Routes/adminRoutes/authRoutes')
+
+const userRouter_auth = require('./Routes/userRoutes/authRoutes')
+
+
 require('dotenv').config();
 
 const app = express();
 app.use(express.json());
 
-app.use('/user',userRouter);
-app.use('/admin',adminRouter);
+
+
+app.use('/admin/room',adminRouter_room);
+app.use('/admin/hotel',adminRouter_hotel);
+app.use('/admin/auth',adminRouter_auth);
+app.use('/user/auth',userRouter_auth)
 
 app.listen(process.env.PORT||3000, ()=>{
     console.log(`App listening at port ${process.env.PORT}`)
