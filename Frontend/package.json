@@ -1,0 +1,29 @@
+{
+  "name": "tripfinder",
+  "description": "react next template",
+  "version": "5.0.0",
+  "private": true,
+  "author": "RedQ, Inc",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "clean": "lerna clean --yes && rimraf node_modules",
+    "clean:build": "lerna exec -- rimraf \"{.next,dist,out,build,.docz,.firebase}\"",
+    "start:hotel": "yarn workspace @tripfinder/hotel-cra run start",
+    "build:hotel": "yarn workspace @tripfinder/hotel-cra run build",
+    "serve:hotel": "yarn workspace @tripfinder/hotel-cra run serve",
+    "firebase-deploy:hotel": "yarn build:hotel && yarn workspace @tripfinder/hotel-cra run host:firebase",
+    "format": "prettier --write .",
+    "check-format": "prettier --check .",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "husky": "^8.0.1",
+    "lerna": "^5.5.1",
+    "prettier": "^2.5.0",
+    "rimraf": "^3.0.2",
+    "serve": "^14.0.1"
+  }
+}

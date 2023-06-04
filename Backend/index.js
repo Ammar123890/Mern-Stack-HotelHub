@@ -4,7 +4,6 @@ const express = require('express');
 const adminRouter_room = require('./Routes/adminRoutes/roomRoutes')
 const adminRouter_hotel = require('./Routes/adminRoutes/hotelRoutes')
 const adminRouter_auth = require('./Routes/adminRoutes/authRoutes')
-
 const userRouter_auth = require('./Routes/userRoutes/authRoutes')
 
 
