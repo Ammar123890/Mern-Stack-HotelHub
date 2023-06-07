@@ -1,0 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@100;200;300;400;500;600&display=swap');
+
+/* 13 - May - 2022 */
+
+:root {
+    --themeColor  : #003580;
+    --btnColor    : #0071c2;
+    --black       : #0b0b0d;
+    --green       : #008009;
+    --white       : #fff;
+    --gray        : #555;
+    --yellow      : #febb02;
+    --border      : 1px solid var(--white);
+    --searchBorder: 3px solid var(--yellow);
+    --blackBorder : 1px solid rgba(0, 0, 0, .1);
+}
+
+* {
+    margin            : 0;
+    padding           : 0;
+    border            : 0;
+    outline           : none;
+    list-style        : none;
+    text-decoration   : none;
+    // user-select    : none;
+    // text-transform : capitalize;
+    box-sizing        : border-box;
+    font-family       : 'Nunito', sans-serif;
+    transition        : all .1s linear;
+}
+
+*::selection {
+    background-color: var(--yellow);
+}
