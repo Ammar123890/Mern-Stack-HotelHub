@@ -65,3 +65,103 @@ export const sign_in = async (req, res, next) => {
         next(error)
     }
 }
+
+
+
+
+
+export const forgotPassword = (req, res) => {
+    const { email } = req.params;
+  
+    // Check if the email exists in the user collection
+    Users.findOne({ email: email })
+      .then((user) => {
+        if (!user) {
+          // Email does not exist
+          return res.status(400).send({ message: 'Email not found' });
+        }
+  
+        // Generate a temporary OTP
+        const otp = otpGenerator.generate(6, { digits: true, alphabets: false, upperCase: false, specialChars: false });
+  
+        // Save the OTP in the PasswordResetToken collection
+        const resetToken = new PasswordResetToken({
+          user: user._id,
+          otp: otp,
+          expiresAt: new Date(Date.now() + 600000), // OTP expires in 10 minutes
+        });
+  
+        resetToken
+          .save()
+          .then(() => {
+            // Send the OTP to the user's email
+            sendOtpByEmail(email, otp);
+  
+            res.status(200).send({ message: 'OTP sent to email' });
+          })
+          .catch((err) => res.status(500).send({ message: 'Internal server error', error: err }));
+      })
+      .catch((err) => res.status(500).send({ message: 'Internal server error', error: err }));
+  };
+  
+  
+  function sendOtpByEmail(email, otp) {
+    // Configure the email transporter
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail',
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+  
+    // Configure the email options
+    const mailOptions = {
+      from: process.env.EMAIL_USERNAME,
+      to: email,
+      subject: 'Password Reset OTP',
+      text: `Your password reset OTP is: ${otp}`,
+    };
+  
+    // Send the email
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log('Email sent: ' + info.response);
+      }
+    });
+  }
+  
+  export const resetPassword = async (req, res) => {
+    try {
+      const { email, otp, newPassword } = req.body;
+  
+      // Find the user based on the email
+      const user = await Users.findOne({ email });
+  
+      if (!user) {
+        return res.status(400).send({ message: 'Invalid email or OTP' });
+      }
+  
+      const resetToken = await PasswordResetToken.findOne({ user: user._id, otp });
+  
+      if (!resetToken) {
+        return res.status(400).send({ message: 'Invalid OTP' });
+      }
+  
+      if (resetToken.expiresAt < Date.now()) {
+        return res.status(400).send({ message: 'OTP has expired' });
+      }
+  
+      // Remove the password reset token
+      await PasswordResetToken.deleteOne({ _id: resetToken._id });
+  
+      // ... code to update the user's password ...
+  
+      res.status(200).send({ message: 'Password reset successful' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ message: 'Internal server error', error: error.message });
+    }
+  };

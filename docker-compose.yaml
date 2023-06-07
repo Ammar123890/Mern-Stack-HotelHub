@@ -1,0 +1,35 @@
+version: "20"
+services:
+
+
+  frontend:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    container_name: front-production
+    networks:
+      - web-project
+    depends_on:
+      - server
+    stdin_open: true
+    tty: true
+
+  backend:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    container_name: backend-deployed
+    networks:
+      - web-project
+    
+
+networks:
+  web-project:
+    driver: bridge
+
+    
+      

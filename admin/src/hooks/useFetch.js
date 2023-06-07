@@ -63,6 +63,9 @@ export const dataDelete = (pathWithId) => api.delete(pathWithId);
 export const dataUpdate = (pathWithId, updatedData) => api.put(pathWithId, updatedData);
 
 export const sign_in = (credentials) => api.post('/auth/sign-in', credentials);
+export const sendResetPasswordOTP = (email) => api.post(`/auth/forgotPassword/${email}`);
+export const verifyResetPasswordOTP= (email, otp,  newPassword) => api.post(`/auth/resetPassword`, email, otp,  newPassword);
+
 export const creatingNewUser = (newUserInfo) => api.post('/auth/sign-up', newUserInfo);
 export const creatingNewHotel = (newHotel) => api.post('/hotels', newHotel);
 export const creatingNewRoom = (hotelId, totalRoomInfo) => api.post(`/rooms/${hotelId}`, totalRoomInfo);

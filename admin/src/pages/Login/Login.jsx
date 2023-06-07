@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { sign_in } from '../../hooks/useFetch';
 import { useState } from 'react';
 import './Login.scss'
+import ForgotPassword from  '../ForgotPassword/ForgotPassword';
 
 const Login = () => {
 
@@ -69,6 +70,11 @@ const Login = () => {
         >
           Login
         </button>
+
+        <button onClick={() => navigate('/forgot-password')}>
+          Forgot Password
+        </button> 
+
 
         {
           error &&
