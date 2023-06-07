@@ -99,7 +99,7 @@ const Login = () => {
                                         id={input.id}
                                         type={input.type}
                                         className="loginInput"
-                                        placeholder={input.placeholder}
+                                        //placeholder={input.placeholder}
                                         onChange={handleChange}
                                     // value={credentials.userName}
                                     />
